@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0-rc.2 (candidate)
 
 - Bound Aider fixture feedback while retaining full raw test output and unchanged
   tests. Exercise explicit deferred/enabled history summarization, genuine failed
@@ -13,6 +13,8 @@
   are not assumed to have cold native cache, including in persistence diagnostics.
 - Document scoped real-engine Panther Lake development validation separately from
   published rc.1 evidence. Persistent sessions remain experimental.
+- Package the development fixes as rc.2; retain the installed-archive and pinned
+  platform-matrix gates before publication. No npm registry publication is used.
 
 ## 0.4.0-rc.1
 

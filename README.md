@@ -13,10 +13,12 @@ Responses / Chat Completions client → HTTP/SSE → Xenolith Bridge → Unix so
 
 ## Current status
 
-**[0.4.0-rc.1](https://github.com/crrisci/xenolith-bridge/releases/tag/v0.4.0-rc.1) — prerelease for diagnostics and protocol hardening.**
+**0.4.0-rc.2 — candidate packaging the Panther Lake feedback and diagnostics fixes.**
 
 The latest published stable release is [0.3.0](https://github.com/crrisci/xenolith-bridge/releases/tag/v0.3.0).
-This candidate adds read-only diagnostics, field-limited reports and protocol fault hardening.
+The previously published prerelease is [0.4.0-rc.1](https://github.com/crrisci/xenolith-bridge/releases/tag/v0.4.0-rc.1).
+This candidate adds bounded Aider feedback, request-correlated diagnostics and
+reproducible KV measurements to the diagnostic/protocol hardening work in rc.1.
 
 See [release acceptance](ACCEPTANCE.md) for clean installation, real-engine
 checks and the validation scope of this release.
@@ -33,8 +35,8 @@ wire simulators and the reference clients. Responses/Chat JSON and SSE,
 persistent recovery, Aider feedback and Codex lifecycle checks are recorded in
 [validation details](ACCEPTANCE.md). These are scoped, self-reported results for
 one engine/model combination, not hardware certification or general performance
-claims. The published rc.1 archives predate the development changes described
-there. Persistent bindings remain experimental; stable status still applies to
+claims. The rc.2 candidate packages those changes; the earlier published rc.1 archives
+remain unchanged. Persistent bindings remain experimental; stable status still applies to
 the documented 0.3.0 contract.
 
 - Progressive text, function/custom tools, one namespace level and validated tool results.
@@ -71,13 +73,13 @@ archive, or produce a portable npm package from a checkout:
 
 ```sh
 npm pack
-# Produces xenolith-bridge-0.4.0-rc.1.tgz for this development candidate.
-npm install --prefix /absolute/private/bridge-install ./xenolith-bridge-0.4.0-rc.1.tgz
+# Produces xenolith-bridge-0.4.0-rc.2.tgz for this development candidate.
+npm install --prefix /absolute/private/bridge-install ./xenolith-bridge-0.4.0-rc.2.tgz
 npm exec --prefix /absolute/private/bridge-install -- xenolith-bridge serve --socket /absolute/path/wire.sock
 ```
 
 A GitHub source-release `.tar.gz` can also be passed directly to `npm install`.
-Global installation is optional: `npm install -g ./xenolith-bridge-0.4.0-rc.1.tgz`
+Global installation is optional: `npm install -g ./xenolith-bridge-0.4.0-rc.2.tgz`
 then `xenolith-bridge serve --socket /absolute/path/wire.sock`.
 Installable archives and checksum sidecars are distributed through GitHub Releases. The package is not on the npm registry. No credentials, runtime SDK, engine or model are bundled.
 

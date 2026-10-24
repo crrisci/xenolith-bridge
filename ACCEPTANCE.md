@@ -2,12 +2,17 @@
 
 ## Validation scope
 
-`0.4.0-rc.1` is a prerelease candidate; the latest stable release remains 0.3.0.
-It adds diagnostics/reporting and protocol hardening to the 0.3.0 text/tool
-contract. Access to real hardware resumed on 2026-10-24. The Panther Lake
-validation below concerns the development checkout after publication of rc.1;
-it does not replace or change the published archives. Earlier base/LNL evidence
-remains historical. Persistent bindings remain experimental.
+`0.4.0-rc.2` is the current source candidate; the latest stable release remains
+0.3.0 and the previously published prerelease is rc.1. It packages the bounded
+Aider feedback, request-correlated diagnostics and reproducible KV measurement
+changes described below. Earlier rc.1 archives and base/LNL evidence remain
+unchanged. Persistent bindings remain experimental.
+
+The Panther Lake observations below identify their tested source and runtime.
+Packaging a new candidate does not convert earlier development results into
+acceptance of that exact archive. Keep an installed-artifact report with its
+archive hash before publishing, and require the release CI matrix.
+
 
 A simulator can check HTTP translation, protocol failures and recovery decisions.
 It cannot establish model quality, native KV restoration or performance.
@@ -20,11 +25,11 @@ archive, or download the matching archive and checksum from GitHub Releases:
 ```sh
 npm pack --ignore-scripts
 npm install --offline --ignore-scripts --no-audit --no-fund \
-  --prefix "$PWD/install" "$PWD/xenolith-bridge-0.4.0-rc.1.tgz"
+  --prefix "$PWD/install" "$PWD/xenolith-bridge-0.4.0-rc.2.tgz"
 ./install/node_modules/.bin/xenolith-bridge --version
 ```
 
-Expect `xenolith-bridge 0.4.0-rc.1`. No npm registry account or global installation
+Expect `xenolith-bridge 0.4.0-rc.2`. No npm registry account or global installation
 is needed. The package bundles neither an engine nor a model. Published archives
 and SHA256 sidecars are available from
 [GitHub Releases](https://github.com/crrisci/xenolith-bridge/releases);
@@ -65,7 +70,7 @@ From this checkout, pointing to the independent installation created above:
 
 ```sh
 export XENOLITH_BRIDGE_INSTALL_ROOT=/absolute/path/to/install
-export XENOLITH_BRIDGE_PACKAGE_ARCHIVE=/absolute/path/to/xenolith-bridge-0.4.0-rc.1.tgz
+export XENOLITH_BRIDGE_PACKAGE_ARCHIVE=/absolute/path/to/xenolith-bridge-0.4.0-rc.2.tgz
 export XENOLITH_BIN=/absolute/path/to/xenolith
 export XENOLITH_MODEL=/absolute/path/to/model.gguf
 npm run test:release:real
