@@ -15,8 +15,13 @@ build, model and supplied history. Persistent bindings remain experimental.
 These versions are pinned in the release CI. Tests run against a wire simulator
 without hosted inference or API credentials, on Linux/macOS with Node 22/24.
 Aider runs in an isolated Python 3.12 environment on the Node 22 jobs. Earlier
-base/LNL real-engine evidence belongs to the 0.3.0 release history; no new
-real-engine compatibility is claimed for the diagnostic changes in 0.4.0-rc.1.
+base/LNL real-engine evidence belongs to the 0.3.0 release history. Development
+validation resumed on Panther Lake on 2026-10-24 with the same reference client
+versions and one Gemma text/tool configuration; see [ACCEPTANCE.md](ACCEPTANCE.md).
+The published rc.1 archives predate those development changes. Aider feedback
+acceptance now checks both deferred and enabled background summarization with
+bounded test feedback, unchanged tests and normal client exit. Persistence is
+still experimental; this does not extend the supported API/model scope.
 
 The separate **Upcoming client compatibility** workflow can be run manually and
 runs weekly and when its workflow changes against the latest client packages. It prints resolved package

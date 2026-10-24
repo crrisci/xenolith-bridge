@@ -8,6 +8,36 @@ import { startFakeWire, done, delay, description } from './helpers/fake-wire.js'
 const base = { model: description.model, stream: true, store: false, input: 'hello' };
 const tool = { type: 'function', name: 'read', description: 'Read', parameters: { type: 'object', properties: { path: { type: 'string' } } } };
 
+test('diagnostic IDs correlate overlapping HTTP requests without entering the API payload', { timeout: 10000 }, async t => {
+  const labels = new Map(), texts = new Map();
+  let release;
+  const both = new Promise(resolve => { release = resolve; });
+  t.after(() => release());
+  const { adapter } = await setup(t, { generate: async ({ request, send }) => {
+    await both;
+    await send({ event: 'text_delta', text: request.messages[0].text });
+    await send(done());
+  } }, {
+    onRequest: (request, { requestId }) => {
+      assert.ok(Number.isInteger(requestId));
+      labels.set(requestId, request.body.input);
+      if (labels.size === 2) release();
+    },
+    onWireEvent: (event, { requestId }) => {
+      assert.ok(labels.has(requestId));
+      if (event.event === 'text_delta') texts.set(requestId, (texts.get(requestId) ?? '') + event.text);
+    },
+  });
+  const responses = await Promise.all(['alpha', 'beta'].map(input => post(adapter, { ...base, input })));
+  assert.equal(labels.size, 2);
+  assert.deepEqual(texts, labels);
+  for (const result of responses) {
+    assert.equal(result.response.status, 200);
+    assert.equal(result.events.at(-1).type, 'response.completed');
+    assert.ok(!result.text.includes('requestId'));
+  }
+});
+
 async function setup(t, options = {}, adapterOptions = {}) {
   const root = await testRoot('unit');
   const fake = await startFakeWire(root, options);

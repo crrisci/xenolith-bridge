@@ -42,3 +42,10 @@ Reasoning, media, hosted/deferred tools, forced tool choice, strict/structured
 outputs, Responses storage/retrieval and WebSockets remain unsupported. Complete
 client history is required; persistent identity alone does not guarantee cache
 reuse. MIT; CodeXe remains a separate Apache-2.0 project.
+
+
+Post-publication development validation (2026-10-24): hardware access has resumed
+on Panther Lake. The current checkout adds Aider feedback/summarization and
+reproducible KV diagnostic checks; see ACCEPTANCE.md for configuration, evidence
+scope and limitations. Those changes are unreleased and are not part of the
+published rc.1 archives described above. No stable promotion is implied.

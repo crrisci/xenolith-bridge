@@ -28,11 +28,14 @@ Aider 0.86.2 exercises Chat Completions with the simulator and real inference.
 The OpenAI JavaScript SDK exercises JSON, streaming and tool history on both APIs.
 Compatibility with other clients must be checked against their actual requests.
 
-Validation combines automated wire-simulator/client/package checks with earlier
-real-engine Aider, Codex and recovery runs on base/LNL builds. The new complete
-JSON/SDK matrix has not been rerun on a real engine: access to the test hardware
-ended before final release validation. Stable status applies to the documented
-0.3.0 contract; persistent bindings remain experimental in this candidate too. See [validation details](ACCEPTANCE.md).
+Development validation on 2026-10-24 uses a real Panther Lake host as well as
+wire simulators and the reference clients. Responses/Chat JSON and SSE,
+persistent recovery, Aider feedback and Codex lifecycle checks are recorded in
+[validation details](ACCEPTANCE.md). These are scoped, self-reported results for
+one engine/model combination, not hardware certification or general performance
+claims. The published rc.1 archives predate the development changes described
+there. Persistent bindings remain experimental; stable status still applies to
+the documented 0.3.0 contract.
 
 - Progressive text, function/custom tools, one namespace level and validated tool results.
 - Bounded process-local KV reuse with `--reuse-kv`.

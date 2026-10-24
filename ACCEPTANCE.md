@@ -4,10 +4,10 @@
 
 `0.4.0-rc.1` is a prerelease candidate; the latest stable release remains 0.3.0.
 It adds diagnostics/reporting and protocol hardening to the 0.3.0 text/tool
-contract. Current verification uses wire simulators and real client software;
-no new real-engine run is claimed. The earlier 0.3.0 base/LNL evidence remains
-historical. The test machine is no longer available. Independent feedback is
-welcome, not required for publication; persistent bindings remain experimental.
+contract. Access to real hardware resumed on 2026-10-24. The Panther Lake
+validation below concerns the development checkout after publication of rc.1;
+it does not replace or change the published archives. Earlier base/LNL evidence
+remains historical. Persistent bindings remain experimental.
 
 A simulator can check HTTP translation, protocol failures and recovery decisions.
 It cannot establish model quality, native KV restoration or performance.
@@ -122,6 +122,105 @@ XENOLITH_BRIDGE_PACKAGE_ARCHIVE=/absolute/path/to/archive.tgz npm run test:packa
 
 This is a package/HTTP check, not evidence of real-model compatibility.
 
+## Panther Lake development validation (2026-10-24)
+
+The test host runs native Ubuntu 26.04.1, Node 22.23.4, an Intel Core Ultra X7
+358H and Arc B390 (Panther Lake, PCI 8086:b080, xe). Xenolith uses fallback
+kernels without XMX for this device; these runs do not qualify its GPU backend.
+The engine source is `simoneiacomino/xenolith` at
+`1e7025331fdb6bff4d9411e72bc526a86d73b0a0`, with
+Gemma-4-26B-A4B-it-qat UD-Q4_K_XL and a 65536-token context. Only that
+text/tool configuration is covered. No vision support or other model/backend
+compatibility is inferred. Reference clients are SDK 7.32.0, Codex 0.162.1 and
+Aider 0.86.2 (Python 3.12).
+
+Private evidence retains raw requests, native counters, logs, test/source hashes,
+package hashes and exit outcomes. The installed-package API battery requires
+all four JSON/SSE cases, real fixture reads, snapshot restoration after restart
+and cancellation/recovery in the SSE cases. Persistence and the Codex lifecycle
+battery additionally cover recovery and coding/compaction/restart behavior.
+These local runs supplement the Linux/macOS Node 22/24 release CI requirement;
+they do not claim that hosted CI was run from this checkout.
+
+On this host, the baseline checkout
+`27bc4a2e484e7a60963d9c90fd12be1ca2f22a58` already passed all **4/4 installed
+package API cases**: Responses JSON/SSE and Chat JSON/SSE, real fixture reads,
+bridge/engine restart with loaded snapshots, and cancellation/recovery in both
+SSE cases. The development harness changes below have their own retained
+results; baseline evidence does not stand in for validating a changed runtime.
+
+Observed feedback results on this host: both policies passed with normal client
+exit 0 and independent verification. Deferred summarization took 92.6 seconds
+of client runtime with two coding requests; enabled summarization took 217.5
+seconds with three coding requests and three completed summary inferences.
+The largest raw enabled-run test output was 19962 characters; model feedback
+was bounded to 5662. Native input peaked at 7882 tokens across those requests,
+compared with over 34000 in the earlier failed unbounded-feedback run. These
+runs demonstrate completion within budget. Generation and scheduling also differ,
+so this is not a controlled latency comparison.
+Aider's changing full history still rebuilt native sessions; these runs do not
+claim incremental Aider KV reuse.
+
+### Aider feedback acceptance
+
+```sh
+# Uses both explicit summary policies by default; requires isolated Aider 0.86.2.
+XENOLITH_BRIDGE_AIDER_PYTHON=/absolute/venv/bin/python npm run test:aider:feedback:real
+```
+
+The invoice fixture requires an actual failed model edit, the genuine failure
+marker in a later **coding** request, correction of both editable modules,
+passing Aider-run tests, an independent passing test run, unchanged test/runner
+contents and normal Aider exit 0 within the original 900-second client budget.
+A first-try success alone cannot pass feedback acceptance.
+
+Only feedback sent to Aider is bounded to 8192 characters (long lines are
+shortened). Complete stdout/stderr remains in private `test-runs.jsonl`.
+A failure marker is retained only if present in that real output. This bounds
+an exceptionally large Python traceback without changing tests or their exit
+codes. A regression exercises a real error over 200000 characters.
+
+Two separate runs set `--max-chat-history-tokens` explicitly: `32768` defers
+summaries for this short fixture; `512` exercises Aider's actual background
+summarizer. This is a soft history threshold, not the model context limit.
+`XENOLITH_BRIDGE_AIDER_SUMMARY_MODES=deferred` or `enabled` selects one policy.
+The default requires both, including at least one completed summary inference in
+the enabled run. Optional diagnostics correlate wire events per HTTP request,
+so overlapping summary/coding requests cannot inherit each other's timings.
+The bridge remains client-neutral; it does not route or suppress summaries.
+
+### Reproducible KV diagnostic
+
+```sh
+XENOLITH_BRIDGE_KV_SEED=ptl-20261024 \
+XENOLITH_BRIDGE_KV_SIZES=32,128,512 \
+XENOLITH_BRIDGE_KV_REPETITIONS=2 npm run test:kv
+```
+
+A recorded seed controls the sample shuffle, verification keys and pair order.
+For each size, even repetition counts balance warm-before-fresh and
+fresh-before-warm comparisons, and independently balance changed-prefix pairs.
+Every sample seeds its owned session first, then measures identical continuation
+history on that session and a fresh session; changed-prefix requests follow the
+warm continuation. The complete schedule is written before generation begins.
+
+The driver checks process names for competing builds before/after each turn,
+records timestamps/load average, and refuses active builds or unreadable process
+names. It also inherits the engine's memory/other-engine preflight. It never
+terminates another user's work. These checks describe the sampled host state;
+they cannot guarantee that a shared host has no activity between samples.
+
+Raw results retain elapsed time, first text latency, native usage and any
+prefill/decode timings, checkpoint/resume data and persistence events. Wire-done
+and commit offsets separate finalization overhead; native checkpoint duration
+is null when the engine does not report it. Medians include observation counts; absent native fields stay null rather than zero.
+A warm continuation must report actual cache reuse, while a changed prefix must
+rebuild. **A fresh session is not guaranteed to have cold native cache.** Within each
+pair, both requests use identical prompt bytes; a seeded rerun uses the same workload,
+so an engine-wide cache can also influence reruns. Timings include generation,
+HTTP and checkpoint work and apply only to this controlled diagnostic, not a
+general throughput claim or a comparison against earlier Lunar Lake hardware.
+
 ## Candidate publication checklist
 
 1. Run unit/protocol, SDK, Codex, Aider and offline package suites. Verify that
@@ -129,7 +228,8 @@ This is a package/HTTP check, not evidence of real-model compatibility.
 2. Require the pinned Linux/macOS Node 22/24 CI matrix. Review early-warning
    results for newer clients separately; see COMPATIBILITY.md.
 3. Preserve explicit unsupported-feature and experimental-session boundaries.
-   Disclose the absent new real-engine run in the README and release notes.
+   Disclose exactly which checkout/archive, engine, model and client versions
+   were exercised; retain failures and distinguish historical release evidence.
 4. Review the candidate version, notes and packed contents before tagging.
    After publication, download both archives, verify checksums/content and test
    clean installation. Publishing a candidate tag creates a prerelease, not a stable release.

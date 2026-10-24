@@ -62,17 +62,14 @@ export async function chatScenarios({ root, socket, bindings, info, url, restart
   const seed = await request('chat_seed', key, messages, { stream: false });
   messages.push({ role: 'assistant', content: seed.content }, { role: 'user', content: 'Return only the verification key.' });
   const warm = await request('chat_warm', key, messages);
-  const cold = await request('chat_cold_identical', prefix + '-cold', messages);
-  assert.equal(warm.content.trim(), nonce);assert.equal(cold.content.trim(), nonce);
-  assert.ok(warm.usage.cache_read > 0);assert.equal(cold.usage.cache_read, 0);
-  assert.ok(cold.usage.input > warm.usage.input);
-  assert.ok(warm.first_text_ms > 0 && cold.first_text_ms > 0);
-  results.kv_comparison = { identical_request_except_session_key: true, repetitions: 1,
-    input_computations_avoided: cold.usage.input - warm.usage.input,
-    input_computations_reduction_percent: 100 * (1 - warm.usage.input / cold.usage.input),
-    elapsed_reduction_percent: 100 * (1 - warm.elapsed_ms / cold.elapsed_ms),
-    first_text_reduction_percent: 100 * (1 - warm.first_text_ms / cold.first_text_ms),
-    note: 'Single sequential warm/cold pair on one engine; timings include HTTP, generation and checkpoint. Not a general throughput benchmark.' };
+  const fresh = await request('chat_fresh_identical', prefix + '-fresh', messages);
+  assert.equal(warm.content.trim(), nonce);assert.equal(fresh.content.trim(), nonce);
+  assert.ok(warm.usage.cache_read > 0);
+  assert.ok(warm.first_text_ms > 0 && fresh.first_text_ms > 0);
+  results.kv_comparison = { identical_request_except_session_key: true, repetitions: 1, fresh_session_is_not_guaranteed_cold: true,
+    warm: { input: warm.usage.input, cache_read: warm.usage.cache_read, elapsed_ms: warm.elapsed_ms, first_text_ms: warm.first_text_ms },
+    fresh: { input: fresh.usage.input, cache_read: fresh.usage.cache_read, elapsed_ms: fresh.elapsed_ms, first_text_ms: fresh.first_text_ms },
+    note: 'Single sequential warm/fresh-session pair on one engine; fresh native cache may be nonzero; timings include HTTP, generation and checkpoint. Not a general throughput benchmark.' };
   await save();
 
   const toolKey = prefix + '-tool';

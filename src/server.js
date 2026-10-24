@@ -24,6 +24,7 @@ export async function startAdapter({ socketPath, port = 0, maxBodyBytes = 8 * 10
     operationTimeoutMs: generationTimeoutMs, onEvent: onSessionEvent }) : reuseKv ? new SessionCache(socketPath, { limit: sessionLimit, ttlMs: sessionTtlMs,
     operationTimeoutMs: generationTimeoutMs, onEvent: onSessionEvent }) : null;
   let active = 0;
+  let diagnosticSequence = 0;
   const handlers = new Set();
   let closing;
   const server = createServer((req, res) => {
@@ -64,7 +65,8 @@ export async function startAdapter({ socketPath, port = 0, maxBodyBytes = 8 * 10
       try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
       catch { throw new AdapterError('invalid_request', 'Malformed JSON request'); }
       // Optional diagnostics hook for tests; production does not log prompts or headers.
-      await onRequest?.({ method: req.method, path, body });
+      const diagnostics = { requestId: ++diagnosticSequence };
+      await onRequest?.({ method: req.method, path, body }, diagnostics);
       translated = (chat ? translateChat : translateRequest)(body, info, { maxOutputTokens });
       const key = sessionKey(req, body, { enabled: Boolean(sessions), persistent: Boolean(stateDir) });
       wire = await WireConnection.open(socketPath);
@@ -103,7 +105,7 @@ export async function startAdapter({ socketPath, port = 0, maxBodyBytes = 8 * 10
         : new ResponseStream(info.model, translated.registry, send, { streaming });
       await stream.start();
       for await (const event of wire.stream(lease?.request ?? translated.request, { signal: abort.signal, timeoutMs: generationTimeoutMs })) {
-        await onWireEvent?.(event);
+        await onWireEvent?.(event, diagnostics);
         if (abort.signal.aborted) continue; // Drain cancel ACK and the terminal event.
         switch (event.event) {
           case 'text_delta': await stream.text(event.text); break;

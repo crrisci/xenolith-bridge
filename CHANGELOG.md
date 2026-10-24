@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Bound Aider fixture feedback while retaining full raw test output and unchanged
+  tests. Exercise explicit deferred/enabled history summarization, genuine failed
+  edits, independent verification and normal client exit within the existing budget.
+- Correlate optional HTTP/wire diagnostic callbacks by request ID without adding
+  fields to client payloads; cover overlapping requests. Reap owned client process
+  groups on timeout so test descendants cannot outlive failed feedback runs.
+- Seed and counterbalance KV diagnostics, check for competing builds, and retain
+  native timings, checkpoint/resume metadata and measured medians. Fresh sessions
+  are not assumed to have cold native cache, including in persistence diagnostics.
+- Document scoped real-engine Panther Lake development validation separately from
+  published rc.1 evidence. Persistent sessions remain experimental.
+
 ## 0.4.0-rc.1
 
 - Add `doctor` to inspect Node, Unix socket reachability and wire v1 capabilities without loading a model, creating sessions or generating text. Include a bounded deadline, machine-readable local output and nonzero failure status.

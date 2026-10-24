@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import { testRoot } from '../helpers/codex.js';
+import { runCaptured } from '../helpers/captured-process.js';
+
+test('large real unittest errors retain raw evidence and bounded genuine feedback', async () => {
+  const root = await testRoot('feedback-bound'), workspace = join(root, 'workspace');
+  await mkdir(workspace);
+  const python = resolve(process.env.XENOLITH_BRIDGE_AIDER_PYTHON ?? '.test-artifacts/aider-runtime/bin/python');
+  const marker = 'actual-failure-in-the-middle';
+  const runner = (await readFile(new URL('./fixtures/invoice-runner.py', import.meta.url), 'utf8')).replace('__FEEDBACK_MARKER__', marker);
+  await writeFile(join(root, 'run-tests.py'), runner);
+  await writeFile(join(workspace, 'money.py'), `def cents(value):\n    raise ValueError('x' * 100000 + '${marker}' + 'y' * 100000)\n`);
+  await writeFile(join(workspace, 'invoice.py'), '# unchanged\n');
+  await writeFile(join(root, 'test_invoice.py'), 'import unittest\nfrom money import cents\nclass T(unittest.TestCase):\n    def test_failure(self):\n        cents(1)\n');
+  const result = await runCaptured(python, [join(root, 'run-tests.py')], { cwd: workspace, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
+  assert.equal(result.code, 1);
+  assert.ok(result.stdout.length <= 8192);
+  assert.match(result.stdout, /FAILED/);
+  assert.ok(result.stdout.includes(marker));
+  const record = JSON.parse((await readFile(join(root, 'test-runs.jsonl'), 'utf8')).trim());
+  assert.ok(record.raw_output_chars > 200000);
+  assert.ok(record.stderr.includes(marker));
+  assert.ok(record.feedback_truncated);
+  assert.deepEqual(record.sources, record.sources_after);
+  assert.equal(record.tests_sha256, record.tests_sha256_after);
+  const absent = await runCaptured(python, ['-c', `import runpy; m=runpy.run_path(${JSON.stringify(join(root, 'run-tests.py'))}); assert '${marker}' not in m['bound_feedback']('x' * 100000, '${marker}')`]);
+  assert.equal(absent.code, 0, absent.stderr);
+});
