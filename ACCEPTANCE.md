@@ -3,7 +3,7 @@
 ## Validation scope
 
 `0.4.0-rc.2` is the current source candidate; the latest stable release remains
-0.3.0 and the previously published prerelease is rc.1. It packages the bounded
+0.3.0; the earlier rc.1 archives remain available. It packages the bounded
 Aider feedback, request-correlated diagnostics and reproducible KV measurement
 changes described below. Earlier rc.1 archives and base/LNL evidence remain
 unchanged. Persistent bindings remain experimental.

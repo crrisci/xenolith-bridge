@@ -16,7 +16,7 @@ Responses / Chat Completions client → HTTP/SSE → Xenolith Bridge → Unix so
 **0.4.0-rc.2 — candidate packaging the Panther Lake feedback and diagnostics fixes.**
 
 The latest published stable release is [0.3.0](https://github.com/crrisci/xenolith-bridge/releases/tag/v0.3.0).
-The previously published prerelease is [0.4.0-rc.1](https://github.com/crrisci/xenolith-bridge/releases/tag/v0.4.0-rc.1).
+The earlier prerelease [0.4.0-rc.1](https://github.com/crrisci/xenolith-bridge/releases/tag/v0.4.0-rc.1) remains available.
 This candidate adds bounded Aider feedback, request-correlated diagnostics and
 reproducible KV measurements to the diagnostic/protocol hardening work in rc.1.
 
